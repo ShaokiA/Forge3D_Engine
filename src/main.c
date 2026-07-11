@@ -6,6 +6,7 @@
 #include "vector.h"
 #include "matrix.h"
 #include "projection.h"
+#include "camera.h"
 #include <math.h>
 
 #define WINDOW_WIDTH 800
@@ -58,6 +59,9 @@ int cube_faces[][3] = {
 
 vec3 camera_pos = {0, 0, -5};
 
+// Orbit camera for mouse controls
+orbit_camera orbit_cam;
+
 // vec3 light_dir = {0.0f, 0.0f, -1.0f};
 vec3 light_dir = {0.3f, 0.5f, -1.0f};
 // vec3 light_dir = vec3_normalize((vec3){0.3f, 0.5f, -1.0f});
@@ -82,6 +86,10 @@ int main(int argc, char* argv[]) {
     if (!initialize_window()) {
         return 1;
     }
+
+    // Initialize orbit camera
+    vec3 target = {0.0f, 0.0f, 0.0f};
+    orbit_cam = orbit_camera_create(target, 10.0f);
 
     while (is_running) {
 
@@ -163,7 +171,7 @@ void process_input(void) {
                     is_running = false;
                 }
 
-                // Add camera controls
+                // Keep old WASD/QE camera controls for fallback
                 float speed = 0.1f;
                 if (event.key.scancode == SDL_SCANCODE_W) {
                     camera_pos.z += speed;
@@ -184,6 +192,22 @@ void process_input(void) {
                     camera_pos.y += speed;
                 }
 
+                break;
+
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                orbit_camera_mouse_button(&orbit_cam, true, event.button.button == SDL_BUTTON_LEFT, window);
+                break;
+
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+                orbit_camera_mouse_button(&orbit_cam, false, event.button.button == SDL_BUTTON_LEFT, window);
+                break;
+
+            case SDL_EVENT_MOUSE_MOTION:
+                orbit_camera_mouse_motion(&orbit_cam, event.motion.xrel, event.motion.yrel);
+                break;
+
+            case SDL_EVENT_MOUSE_WHEEL:
+                orbit_camera_mouse_wheel(&orbit_cam, event.wheel.y);
                 break;
         }
     }
@@ -210,11 +234,11 @@ void update(void) {
         cam.far
     );
 
-    mat4 view = mat4_translate(
-        -camera_pos.x,
-        -camera_pos.y,
-        -camera_pos.z
-    );
+    // Use orbit camera view matrix
+    mat4 view = orbit_camera_view_matrix(&orbit_cam);
+    
+    // Update camera_pos for lighting calculations
+    camera_pos = orbit_camera_position(&orbit_cam);
 
     vec3 world_pos[8];
     vertex2d screen_pos[8];

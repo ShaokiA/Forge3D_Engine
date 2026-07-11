@@ -16,7 +16,9 @@ Forge3D/
 │   ├── matrix.c
 │   ├── matrix.h
 │   ├── projection.c
-│   └── projection.h
+│   ├── projection.h
+│   ├── camera.c
+│   └── camera.h
 │
 └── build/
 ```
@@ -40,7 +42,7 @@ Open **Command Prompt** and navigate to the project root directory.
 Compile the project with:
 
 ```bash
-gcc src/main.c src/vector.c src/matrix.c src/projection.c -lSDL3 -lm -o build/forge3d.exe
+gcc src/main.c src/vector.c src/matrix.c src/projection.c src/camera.c -lSDL3 -lm -o build/forge3d.exe
 ```
 
 > **Note:** Depending on your system, you may need to configure include paths and library paths for SDL3 if they are not already available to GCC.
@@ -58,6 +60,13 @@ or
 ```bash
 build\forge3d.exe
 ```
+
+## Controls
+
+- **Left-click + drag**: Rotate camera around the scene (orbit controls)
+- **Scroll wheel**: Zoom in/out
+- **WASD/Q/E keys**: Legacy direct camera movement (kept for fallback)
+- **ESC**: Exit the application
 
 ## Notes
 
