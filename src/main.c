@@ -30,16 +30,23 @@ camera cam = {
     .far = 1000.0f
 };
 
-vec3 cube[] = {
-    {-1, -1,  1},
-    { 1, -1,  1},
-    { 1,  1,  1},
-    {-1,  1,  1},
+#define PHI 1.618034f
 
-    {-1, -1, -1},
-    { 1, -1, -1},
-    { 1,  1, -1},
-    {-1,  1, -1}
+vec3 cube[] = {
+    {-1,  PHI, 0},
+    { 1,  PHI, 0},
+    {-1, -PHI, 0},
+    { 1, -PHI, 0},
+
+    {0, -1,  PHI},
+    {0,  1,  PHI},
+    {0, -1, -PHI},
+    {0,  1, -PHI},
+
+    { PHI, 0, -1},
+    { PHI, 0,  1},
+    {-PHI, 0, -1},
+    {-PHI, 0,  1}
 };
 
 int cube_edges[][2] = {
@@ -49,12 +56,29 @@ int cube_edges[][2] = {
 };
 
 int cube_faces[][3] = {
-    {0, 1, 2}, {0, 2, 3},   // front
-    {1, 5, 6}, {1, 6, 2},   // right
-    {5, 4, 7}, {5, 7, 6},   // back
-    {4, 0, 3}, {4, 3, 7},   // left
-    {3, 2, 6}, {3, 6, 7},   // top
-    {4, 5, 1}, {4, 1, 0}    // bottom
+    {0,11,5},
+    {0,5,1},
+    {0,1,7},
+    {0,7,10},
+    {0,10,11},
+
+    {1,5,9},
+    {5,11,4},
+    {11,10,2},
+    {10,7,6},
+    {7,1,8},
+
+    {3,9,4},
+    {3,4,2},
+    {3,2,6},
+    {3,6,8},
+    {3,8,9},
+
+    {4,9,5},
+    {2,4,11},
+    {6,2,10},
+    {8,6,7},
+    {9,8,1}
 };
 
 vec3 camera_pos = {0, 0, -5};
@@ -240,10 +264,10 @@ void update(void) {
     // Update camera_pos for lighting calculations
     camera_pos = orbit_camera_position(&orbit_cam);
 
-    vec3 world_pos[8];
-    vertex2d screen_pos[8];
+    vec3 world_pos[12];
+    vertex2d screen_pos[12];
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 12; i++) {
 
         vec4 v = (vec4){
             cube[i].x,
@@ -273,7 +297,7 @@ void update(void) {
         screen_pos[i].z = clip.z;
     }
 
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 20; i++) {
 
         int a = cube_faces[i][0];
         int b = cube_faces[i][1];
