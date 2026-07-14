@@ -39,7 +39,7 @@ vec3 cube[] = {
     { 1, -PHI, 0},
 
     {0, -1,  PHI},
-    {0,  1,  PHI},
+    {0,  1,  PHI}, 
     {0, -1, -PHI},
     {0,  1, -PHI},
 
@@ -52,7 +52,7 @@ vec3 cube[] = {
 int cube_edges[][2] = {
     {0, 1}, {1, 2}, {2, 3}, {3, 0}, // front face
     {4, 5}, {5, 6}, {6, 7}, {7, 4}, // back face
-    {0, 4}, {1, 5}, {2, 6}, {3, 7}  // connections
+    {0, 4}, {1, 5}, {2, 6}, {3, 7}  // connectionss
 };
 
 int cube_faces[][3] = {
