@@ -1,27 +1,30 @@
-#include <SDL3/SDL.h>
-#include <stdbool.h>
-#include <stdint.h>
+#include <SDL3/SDL.h>//cross-platform library; handle input, output and rendering
+#include <stdbool.h>//easy true false identification
+#include <stdint.h>//for fixed size integer data types
 #include <stdio.h>
 #include <stdlib.h>
-#include "vector.h"
-#include "matrix.h"
-#include "projection.h"
-#include "camera.h"
+#include "vector.h"//user-defined
+#include "matrix.h"//user-defined
+#include "projection.h"//user-defined
+#include "camera.h"//user-defined
 #include <math.h>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+//pre-processor, total screen=600*800 pixels
 
-bool is_running = true;
-
-SDL_Window* window = NULL;
-SDL_Renderer* renderer = NULL;
+bool is_running = true;//variable is_running declaration
+SDL_Window* window = NULL;//pointer of SDL_Window(the screen in which program runs) data type is set to NULL
+SDL_Renderer* renderer = NULL;//pointer of SDL_Renderer(component/pen that draws in window) data type is set to NULL
 SDL_Texture* color_buffer_texture = NULL;
+//pointer of SDL_Texture(image that GPU can render/draw when user calls Graphics API(OpenGL used here) to connect GPU) data type is set to NULL
 
-// Framebuffer
-uint32_t* color_buffer = NULL;
 
-float* z_buffer = NULL;
+uint32_t* color_buffer = NULL;//Its a framebuffer (1D array) where all pixel colors are stored in 32 bit unsigned int before final screen display
+//later used malloc can convert it into a 2D array of pixels, each pixel represented by a 32-bit unsigned integer (uint32_t) in ARGB format (Alpha, Red, Green, Blue).
+//alpha means transparency,0x000000FF(last 2 digits alpha)
+//(color_buffer[index])'s index = y * WINDOW_WIDTH + x;
+float* z_buffer = NULL;//depth of every pixel and 1D array structure similar to color_buffer
 
 camera cam = {
     .fov = 3.14159f / 3.0f,  // 60 degrees
@@ -30,32 +33,38 @@ camera cam = {
     .far = 1000.0f
 };
 
-#define PHI 1.618034f
+#define PHI 1.618034f//golden ratio, (1+sqrt(5))/2, used to create icosahedron vertices
+//20/6 face 12/8 vertice 30/12 edge
 
-vec3 cube[] = {
-    {-1,  PHI, 0},
+vec3 icosahedron_vertices[] = {//array of variable cube belonging to struct v3(has 3 variable float values x,y,z)
+    //vertices of icosahedron, 12 vertices, each vertex has 3 coordinates (x, y, z)
+    {-1,  PHI, 0},//cube[0].x=-1,cube[0].y=PHI,cube[0].z=0
     { 1,  PHI, 0},
     {-1, -PHI, 0},
     { 1, -PHI, 0},
 
     {0, -1,  PHI},
-    {0,  1,  PHI}, 
+    {0,  1,  PHI},
     {0, -1, -PHI},
     {0,  1, -PHI},
 
     { PHI, 0, -1},
     { PHI, 0,  1},
     {-PHI, 0, -1},
-    {-PHI, 0,  1}
+    {-PHI, 0,  1},
+    
+};
+//(left/right, top/bottom, front/back)
+//centre of cube if be at (0,0,0) and each side is 2 unit then the vertices of cube are at (-1,1,-1), (1,1,-1), (1,-1,-1), (-1,-1,-1), (-1,1,1), (1,1,1), (1,-1,1), (-1,-1,1)
+
+int icosahedron_edges[][2] = {//30 edges, each edge connects 2 vertices, so 2D array of size [30][2]
+    {0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 0}, // pentagon 1
+    {5, 6}, {6, 7}, {7, 8}, {8, 9}, {9, 5}, // pentagon 2
+    {0, 5}, {1, 6}, {2, 7}, {3, 8}, {4, 9}  // connecting edges
 };
 
-int cube_edges[][2] = {
-    {0, 1}, {1, 2}, {2, 3}, {3, 0}, // front face
-    {4, 5}, {5, 6}, {6, 7}, {7, 4}, // back face
-    {0, 4}, {1, 5}, {2, 6}, {3, 7}  // connectionss
-};
-
-int cube_faces[][3] = {
+int icosahedron_faces[][3] = {//20 triangular faces, each face connects 3 vertices, so 2D array of size [20][3]
+    //found from standard connectivity diagram google
     {0,11,5},
     {0,5,1},
     {0,1,7},
@@ -264,17 +273,18 @@ void update(void) {
     // Update camera_pos for lighting calculations
     camera_pos = orbit_camera_position(&orbit_cam);
 
-    vec3 world_pos[12];
-    vertex2d screen_pos[12];
+    vec3 world_pos[12];//face seen from camera, 12 vertices of icosahedron
+    vertex2d screen_pos[12];//2D screen coordinates of 12 vertices of icosahedron seen by us
 
     for (int i = 0; i < 12; i++) {
 
         vec4 v = (vec4){
-            cube[i].x,
-            cube[i].y,
-            cube[i].z,
+            icosahedron_vertices[i].x,
+            icosahedron_vertices[i].y,
+            icosahedron_vertices[i].z,
             1.0f
         };
+        //just assign x,y,z,w to respective icosahedron_vertices[i] and w=1.0f
 
         // MODEL
         vec4 world = mat4_mul_vec4(model, v);
@@ -299,9 +309,9 @@ void update(void) {
 
     for (int i = 0; i < 20; i++) {
 
-        int a = cube_faces[i][0];
-        int b = cube_faces[i][1];
-        int c = cube_faces[i][2];
+        int a = icosahedron_faces[i][0];
+        int b = icosahedron_faces[i][1];
+        int c = icosahedron_faces[i][2];
 
         draw_triangle(
             screen_pos[a],
