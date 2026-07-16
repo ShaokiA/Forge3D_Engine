@@ -8,6 +8,8 @@
 #include "projection.h" //user-defined
 #include "camera.h"     //user-defined
 #include <math.h>
+#include "mesh_loader.h"
+#include "mesh.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -30,75 +32,13 @@ camera cam = {
     .near = 0.1f,
     .far = 1000.0f};
 
-#define PHI 1.618034f // golden ratio, (1+sqrt(5))/2, used to create icosahedron vertices
+#define PHI 1.618034f
 // 20/6 face 12/8 vertice 30/12 edge
 
-vec3 icosahedron_vertices[] = {
-    // array of variable cube belonging to struct v3(has 3 variable float values x,y,z)
-    // vertices of icosahedron, 12 vertices, each vertex has 3 coordinates (x, y, z)
-    {-1, PHI, 0}, // cube[0].x=-1,cube[0].y=PHI,cube[0].z=0
-    {1, PHI, 0},
-    {-1, -PHI, 0},
-    {1, -PHI, 0},
 
-    {0, -1, PHI},
-    {0, 1, PHI},
-    {0, -1, -PHI},
-    {0, 1, -PHI},
 
-    {PHI, 0, -1},
-    {PHI, 0, 1},
-    {-PHI, 0, -1},
-    {-PHI, 0, 1},
 
-};
-//(left/right, top/bottom, front/back)
-// centre of cube if be at (0,0,0) and each side is 2 unit then the vertices of cube are at (-1,1,-1), (1,1,-1), (1,-1,-1), (-1,-1,-1), (-1,1,1), (1,1,1), (1,-1,1), (-1,-1,1)
 
-int icosahedron_edges[][2] = {
-    // 30 edges, each edge connects 2 vertices, so 2D array of size [30][2]
-    {0, 1},
-    {1, 2},
-    {2, 3},
-    {3, 4},
-    {4, 0}, // pentagon 1
-    {5, 6},
-    {6, 7},
-    {7, 8},
-    {8, 9},
-    {9, 5}, // pentagon 2
-    {0, 5},
-    {1, 6},
-    {2, 7},
-    {3, 8},
-    {4, 9} // connecting edges
-};
-
-int icosahedron_faces[][3] = { // 20 triangular faces, each face connects 3 vertices, so 2D array of size [20][3]
-    // found from standard connectivity diagram google
-    {0, 11, 5},
-    {0, 5, 1},
-    {0, 1, 7},
-    {0, 7, 10},
-    {0, 10, 11},
-
-    {1, 5, 9},
-    {5, 11, 4},
-    {11, 10, 2},
-    {10, 7, 6},
-    {7, 1, 8},
-
-    {3, 9, 4},
-    {3, 4, 2},
-    {3, 2, 6},
-    {3, 6, 8},
-    {3, 8, 9},
-
-    {4, 9, 5},
-    {2, 4, 11},
-    {6, 2, 10},
-    {8, 6, 7},
-    {9, 8, 1}};
 
 vec3 camera_pos = {0, 0, -5};
 
@@ -135,10 +75,15 @@ int main(void)
     // Initialize orbit camera
     vec3 target = {0.0f, 0.0f, 0.0f};
     orbit_cam = orbit_camera_create(target, 10.0f);
+    if (!load_obj("model.obj", &mesh))
+{
+    printf("OBJ load failed!\n");
+    return 1;
+}
 
     while (is_running)
     {
-
+  
         process_input();
 
         update();
@@ -316,19 +261,19 @@ void update(void)
     // Update camera_pos for lighting calculations
     camera_pos = orbit_camera_position(&orbit_cam);
 
-    vec3 world_pos[12];      // face seen from camera, 12 vertices of icosahedron after roation from initial position
-    vertex2d screen_pos[12]; // 2D screen coordinates of 12 vertices of icosahedron seen by us
+    vec3 world_pos[MAX_VERTICES];      
+    vertex2d screen_pos[MAX_VERTICES]; 
     // array of 12 vec3 and vertex2d
 
-    for (int i = 0; i < 12; i++)
+    for(int i=0;i<mesh.vertex_count;i++)
     {
 
         vec4 v = (vec4){
-            icosahedron_vertices[i].x,
-            icosahedron_vertices[i].y,
-            icosahedron_vertices[i].z,
+            mesh.vertices[i].x,
+            mesh.vertices[i].y,
+            mesh.vertices[i].z,
             1.0f};
-        // just assign x,y,z,w to respective icosahedron_vertices[i] and w=1.0f
+        
 
         // MODEL
         vec4 world = mat4_mul_vec4(model, v); // model is matrix multiplication of x and y axis rotation
@@ -353,12 +298,12 @@ void update(void)
         // converting -1,0,1 scale to 0-800 pixel form
     }
 
-    for (int i = 0; i < 20; i++)
+    for(int i=0;i<mesh.face_count;i++)
     {
 
-        int a = icosahedron_faces[i][0];
-        int b = icosahedron_faces[i][1];
-        int c = icosahedron_faces[i][2];
+        int a = mesh.faces[i][0];
+        int b = mesh.faces[i][1];
+        int c = mesh.faces[i][2];
 
         draw_triangle(
             screen_pos[a],
@@ -435,6 +380,7 @@ void draw_pixel(int x, int y, float z, uint32_t color)
         color_buffer[index] = color;
     }
 }
+// 1st 2 00 means transparent and FF means completely visible
 
 void draw_line(int x0, int y0, int x1, int y1, uint32_t color)
 {
@@ -479,7 +425,7 @@ void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3
 
     float area = fabsf((s1.x - s0.x) * (s2.y - s0.y) - (s1.y - s0.y) * (s2.x - s0.x));
 
-    if (area < 0.0001f)
+    if (area < 0.0001f) // if shifting is negligible,no change
         return;
 
     vec3 edge1 = vec3_sub(v1, v0);
