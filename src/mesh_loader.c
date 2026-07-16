@@ -16,6 +16,7 @@ bool load_obj(const char *filename, Mesh *mesh)
     {
         return false;
     }
+    printf("Loading: %s\n", filename);
     mesh->vertex_count = 0;
     mesh->face_count = 0;
 
@@ -63,6 +64,8 @@ bool load_obj(const char *filename, Mesh *mesh)
     }
 
     fclose(file);
+    printf("Vertices : %d\n", mesh->vertex_count);
+printf("Faces    : %d\n", mesh->face_count);
 
     return true;
 }
