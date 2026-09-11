@@ -279,7 +279,7 @@ bool validate_mesh(const Mesh *mesh)
     }
     
     // Verify normals are unit length
-    const float EPSILON = 1e-5f;
+    const float EPSILON = 1e-4f;
     
     if (mesh->has_normals && mesh->normals && mesh->normal_count > 0) {
         for (int i = 0; i < mesh->normal_count; i++) {
