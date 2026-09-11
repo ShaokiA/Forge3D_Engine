@@ -6,7 +6,7 @@ A software 3D renderer written in C with OBJ file loading and simple lighting.
 
 ```
 Forge3D/
-├── src/              # Source code (commit this)
+├── src/
 │   ├── main.c
 │   ├── mesh.c/.h
 │   ├── mesh_loader.c/.h
@@ -16,10 +16,7 @@ Forge3D/
 │   ├── matrix.c/.h
 │   ├── projection.c/.h
 │   └── camera.c/.h
-├── build/           # Binaries (ignored)
-├── tests/           # Unit tests (ignored)
-├── docs/            # Documentation (ignored)
-└── .kiro/           # Specs (ignored)
+├── build/
 ```
 
 ## Requirements
@@ -40,22 +37,19 @@ Free models: [TurboSquid](https://www.turbosquid.com/), [Free3D](https://free3d.
 ### 2. Build
 
 ```bash
-mkdir -p build
-gcc -o build/forge3d.exe \
-    src/main.c \
-    src/vector.c \
-    src/matrix.c \
-    src/projection.c \
-    src/camera.c \
-    src/mesh.c \
-    src/mesh_loader.c \
-    src/material.c \
-    src/lighting.c \
-    -lSDL3 -lm -I src
+gcc -o build\forge3d.exe src\main.c src\vector.c src\matrix.c src\projection.c src\camera.c src\mesh.c src\mesh_loader.c src\material.c src\lighting.c -lSDL3 -lm -I src
+```
+or
+```bash
+gcc -o build\forge3d src\main.c src\vector.c src\matrix.c src\projection.c src\camera.c src\mesh.c src\mesh_loader.c src\material.c src\lighting.c -lSDL3 -lm -I src
 ```
 
 ### 3. Run
 
+```bash
+build\forge3d.exe
+```
+or
 ```bash
 ./build/forge3d.exe
 ```

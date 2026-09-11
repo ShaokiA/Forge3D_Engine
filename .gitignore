@@ -1,9 +1,9 @@
 # Build artifacts
-build/
+# build/
 
 # Compiled files
 *.exe
-*.o
+# *.o
 
 # IDE files
 .vscode/
