@@ -1,75 +1,84 @@
 # Forge3D Engine
 
-A 3D rendering engine written in C.
+A software 3D renderer written in C with OBJ file loading and simple lighting.
 
 ## Project Structure
 
-Organize the project as follows:
-
-```text
-Forge3D/
-│
-├── src/
-│   ├── main.c
-│   ├── vector.c
-│   ├── vector.h
-│   ├── matrix.c
-│   ├── matrix.h
-│   ├── projection.c
-│   ├── projection.h
-│   ├── camera.c
-│   └── camera.h
-│
-└── build/
 ```
-
-Place all `.c` and `.h` source files inside the `src` directory.
+Forge3D/
+├── src/              # Source code (commit this)
+│   ├── main.c
+│   ├── mesh.c/.h
+│   ├── mesh_loader.c/.h
+│   ├── material.c/.h
+│   ├── lighting.c/.h
+│   ├── vector.c/.h
+│   ├── matrix.c/.h
+│   ├── projection.c/.h
+│   └── camera.c/.h
+├── build/           # Binaries (ignored)
+├── tests/           # Unit tests (ignored)
+├── docs/            # Documentation (ignored)
+└── .kiro/           # Specs (ignored)
+```
 
 ## Requirements
 
-Before compiling, make sure you have:
+- **GCC** compiler
+- **SDL3** development libraries  
+- **Math library** (libm)
+- An **OBJ file** to render
 
-- GCC (MinGW or another GCC toolchain)
-- SDL3 development libraries
-- Math library (`libm`, included with GCC)
+## How to Build and Run
 
-Ensure that the SDL3 headers and libraries are properly installed and accessible to GCC.
+### 1. Get an OBJ File
 
-## Building
+Place your OBJ file in the project root as `model.obj`, or edit the path in `src/main.c` (line ~97).
 
-Open **Command Prompt** and navigate to the project root directory.
+Free models: [TurboSquid](https://www.turbosquid.com/), [Free3D](https://free3d.com/)
 
-Compile the project with:
+### 2. Build
 
 ```bash
-gcc src/main.c src/vector.c src/matrix.c src/projection.c src/camera.c -lSDL3 -lm -o build/forge3d.exe
+mkdir -p build
+gcc -o build/forge3d.exe \
+    src/main.c \
+    src/vector.c \
+    src/matrix.c \
+    src/projection.c \
+    src/camera.c \
+    src/mesh.c \
+    src/mesh_loader.c \
+    src/material.c \
+    src/lighting.c \
+    -lSDL3 -lm -I src
 ```
 
-> **Note:** Depending on your system, you may need to configure include paths and library paths for SDL3 if they are not already available to GCC.
-
-## Running
-
-After a successful build, run the executable with:
+### 3. Run
 
 ```bash
-build\forge3d
-```
-
-or
-
-```bash
-build\forge3d.exe
+./build/forge3d.exe
 ```
 
 ## Controls
 
-- **Left-click + drag**: Rotate camera around the scene (orbit controls)
-- **Scroll wheel**: Zoom in/out
-- **WASD/Q/E keys**: Legacy direct camera movement (kept for fallback)
-- **ESC**: Exit the application
+- **Left-click + drag**: Orbit camera
+- **Scroll wheel**: Zoom
+- **WASD/Q/E**: Move camera
+- **ESC**: Exit
 
-## Notes
+## Features
 
-- The `build` directory stores the compiled executable.
-- All source (`.c`) and header (`.h`) files should remain inside the `src` directory.
-- Make sure all required SDL3 dependencies are installed before compiling.
+- **OBJ Loading**: Vertices, normals, texture coords, multiple face formats
+- **Auto Normals**: Computed automatically if not in file
+- **Lighting**: Ambient + diffuse (N·L), up to 2 lights
+- **Materials**: Simple base color system
+- **Orbit Camera**: Mouse-controlled scene navigation
+
+## Troubleshooting
+
+**"OBJ load failed"**: Check `model.obj` exists or update path in `src/main.c` line ~97
+
+**"Mesh validation failed"**: OBJ file has invalid indices - check error message
+
+**"SDL3 not found"**: Install SDL3 development libraries
