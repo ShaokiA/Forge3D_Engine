@@ -77,7 +77,7 @@ int main(void)
     material_init(&default_material);
     
     // Load mesh
-    if (!load_obj("model.obj", &mesh))
+    if (!load_obj("src/model.obj", &mesh))
     {
         printf("OBJ load failed!\n");
         return 1;
@@ -229,8 +229,9 @@ void update(void)
 
     camera_pos = orbit_camera_position(&orbit_cam);
 
-    vec3 world_pos[MAX_VERTICES];
-    vertex2d screen_pos[MAX_VERTICES];
+    // Allocate temporary arrays for transformed vertices
+    vec3 *world_pos = (vec3 *)malloc(mesh.vertex_count * sizeof(vec3));
+    vertex2d *screen_pos = (vertex2d *)malloc(mesh.vertex_count * sizeof(vertex2d));
 
     // Transform vertices
     for (int i = 0; i < mesh.vertex_count; i++)
@@ -279,6 +280,10 @@ void update(void)
             0xFFAAAAAA
         );
     }
+
+    // Free temporary arrays
+    free(world_pos);
+    free(screen_pos);
 }
 
 void render(void)
