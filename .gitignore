@@ -2,8 +2,8 @@
 # build/
 
 # Compiled files
-*.exe
-# *.o
+# *.exe
+*.o
 
 # IDE files
 .vscode/
