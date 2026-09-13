@@ -53,7 +53,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color);
 void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3 v2, uint32_t color);
 void render_color_buffer(void);
 
-int main(void)
+int main(int argc, char *argv[])
 {
     if (!initialize_window())
     {
@@ -77,7 +77,16 @@ int main(void)
     material_init(&default_material);
     
     // Load mesh
-    if (!load_obj("src/model.obj", &mesh))
+    if (argc < 2)
+    {
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+    char filename[300];
+    snprintf(filename, sizeof(filename), "models/%s.obj", argv[1]);
+
+    printf("Loading mesh: %s.obj\n", filename);
+    if (!load_obj(filename, &mesh))
     {
         printf("OBJ load failed!\n");
         return 1;

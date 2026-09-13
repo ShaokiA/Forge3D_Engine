@@ -17,7 +17,7 @@ typedef struct {                    // 4D vector er structure
     float y;                        // Y coordinate
     float z;                        // Z coordinate
     float w;                        // Homogeneous coordinate: w=0 hole position ar w=1 hole coordinate vector
-                                        transformation er jonno use kora hoy
+                                    // transformation er jonno use kora hoy
 } vec4;                             // struct er nam vec4
 
 typedef struct {                    // Vertex er structure
