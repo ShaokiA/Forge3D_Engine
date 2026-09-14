@@ -412,8 +412,29 @@ void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3
     if (light_intensity < 0.0f)
         light_intensity = 0.0f;
 
+    vec3 view_dir = vec3_normalize(
+        vec3_sub(camera_pos, v0)
+    );
+
+    vec3 reflect_dir = vec3_sub(
+        vec3_scale(normal, 2.0f * vec3_dot(normal, light_dir)),
+        light_dir
+    );
+
+    reflect_dir = vec3_normalize(reflect_dir);
+
+    float spec_angle = vec3_dot(view_dir, reflect_dir);
+
+    if (spec_angle < 0.0f)
+        spec_angle = 0.0f;
+
+    float specular = powf(
+        spec_angle,
+        default_material.shininess
+    ) * default_material.specular;
+
     // Backface culling
-    vec3 view_dir = vec3_normalize(vec3_sub(camera_pos, v0));
+    // vec3 view_dir = vec3_normalize(vec3_sub(camera_pos, v0));
     if (vec3_dot(normal, view_dir) <= 0)
         return;
 
@@ -446,9 +467,14 @@ void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3
                 uint8_t g = (tex_color >> 8) & 0xFF;
                 uint8_t b = tex_color & 0xFF;
 
-                r = (uint8_t)(r * light_intensity);
-                g = (uint8_t)(g * light_intensity);
-                b = (uint8_t)(b * light_intensity);
+                float final_intensity = light_intensity + specular;
+
+                if (final_intensity > 1.0f)
+                    final_intensity = 1.0f;
+
+                r = (uint8_t)(r * final_intensity);
+                g = (uint8_t)(g * final_intensity);
+                b = (uint8_t)(b * final_intensity);
 
                 uint32_t lit_color = 0xFF000000 |
                                      (r << 16) |

@@ -8,6 +8,11 @@ void material_init(Material *material)
     material->base_color.y = 0.7f;
     material->base_color.z = 0.7f;
 
+    //matte
     material->specular = 0.05f;
     material->shininess = 8.0f;
+
+    //glossy
+    // material->specular = 0.8f;
+    // material->shininess = 64.0f;
 }
