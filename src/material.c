@@ -13,6 +13,6 @@ void material_init(Material *material)
     material->shininess = 8.0f;
 
     //glossy
-    // material->specular = 0.8f;
-    // material->shininess = 64.0f;
+    // material->specular = 1.0f;
+    // material->shininess = 128.0f;
 }

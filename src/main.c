@@ -14,8 +14,8 @@
 #include "mesh.h"
 #include "texture.h"
 
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#define WINDOW_WIDTH 1600
+#define WINDOW_HEIGHT 800
 
 float *z_buffer = NULL;
 uint32_t *color_buffer = NULL;
@@ -241,8 +241,8 @@ void update(void)
     float time = SDL_GetTicks() * 0.001f;
 
     // Model rotation
-    mat4 rot_y = mat4_rotate_y(time);
-    mat4 rot_x = mat4_rotate_x(time * 0.7f);
+    mat4 rot_y = mat4_rotate_y(time*0);
+    mat4 rot_x = mat4_rotate_x(time * 0.7f*0);
     mat4 model = mat4_mul(rot_y, rot_x);
 
     mat4 proj = mat4_perspective(cam.fov, cam.aspect, cam.near, cam.far);
