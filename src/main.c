@@ -33,7 +33,7 @@ camera cam = {
     .far = 1000.0f
 };
 
-vec3 camera_pos = {0, 0, -5};
+vec3 camera_pos = {0, 0, -100};
 
 // Orbit camera
 orbit_camera orbit_cam;
