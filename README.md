@@ -15,6 +15,7 @@ Forge3D/
 │   ├── vector.c/.h
 │   ├── matrix.c/.h
 │   ├── projection.c/.h
+│   ├── texture.c/.h
 │   └── camera.c/.h
 ├── build/
 │   ├── forge3d
