@@ -241,8 +241,8 @@ void update(void)
     float time = SDL_GetTicks() * 0.001f;
 
     // Model rotation
-    mat4 rot_y = mat4_rotate_y(time*0);
-    mat4 rot_x = mat4_rotate_x(time * 0.7f*0);
+    mat4 rot_y = mat4_rotate_y(time*01);
+    mat4 rot_x = mat4_rotate_x(time * 0.7f*01);
     mat4 model = mat4_mul(rot_y, rot_x);
 
     mat4 proj = mat4_perspective(cam.fov, cam.aspect, cam.near, cam.far);
@@ -411,6 +411,12 @@ void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3
 
     if (light_intensity < 0.0f)
         light_intensity = 0.0f;
+    float ambient = 0.25f;
+
+    light_intensity += ambient;
+
+    if (light_intensity > 1.0f)
+        light_intensity = 1.0f;
 
     vec3 view_dir = vec3_normalize(
         vec3_sub(camera_pos, v0)
