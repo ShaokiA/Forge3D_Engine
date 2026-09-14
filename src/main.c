@@ -12,12 +12,14 @@
 #include <math.h>
 #include "mesh_loader.h"
 #include "mesh.h"
+#include "texture.h"
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
 float *z_buffer = NULL;
 uint32_t *color_buffer = NULL;
+uint32_t mesh_color = 0xFFFF0000; // Red
 
 bool is_running = true;
 SDL_Window *window = NULL;
@@ -39,6 +41,7 @@ orbit_camera orbit_cam;
 // Lighting
 LightingSystem lighting_sys;
 Material default_material;
+Texture texture;
 
 // Function declarations
 bool initialize_window(void);
@@ -50,7 +53,7 @@ void destroy_window(void);
 void clear_color_buffer(uint32_t color);
 void draw_pixel(int x, int y, float z, uint32_t color);
 void draw_line(int x0, int y0, int x1, int y1, uint32_t color);
-void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3 v2, uint32_t color);
+void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3 v2, vec2 uv0, vec2 uv1, vec2 uv2, const Texture *texture);
 void render_color_buffer(void);
 
 int main(int argc, char *argv[])
@@ -77,18 +80,26 @@ int main(int argc, char *argv[])
     material_init(&default_material);
     
     // Load mesh
-    if (argc < 2)
+    if (argc < 3)
     {
-        printf("Usage: %s <filename>\n", argv[0]);
+        printf("Usage: %s <filename> <texture>\n", argv[0]);
         return 1;
     }
     char filename[300];
     snprintf(filename, sizeof(filename), "models/%s.obj", argv[1]);
+    char texturee[300];
+    snprintf(texturee, sizeof(texturee), "textures/%s", argv[2]);
 
-    printf("Loading mesh: %s.obj\n", filename);
+    // printf("Loading mesh: %s.obj\n", filename);
     if (!load_obj(filename, &mesh))
     {
         printf("OBJ load failed!\n");
+        return 1;
+    }
+
+    if (!texture_load(&texture, texturee))
+    {
+        mesh_free(&mesh);
         return 1;
     }
     
@@ -116,6 +127,7 @@ int main(int argc, char *argv[])
 
     destroy_window();
     mesh_free(&mesh);
+    texture_free(&texture);
 
     return 0;
 }
@@ -286,7 +298,10 @@ void update(void)
         draw_triangle(
             screen_pos[a], screen_pos[b], screen_pos[c],
             world_pos[a], world_pos[b], world_pos[c],
-            0xFFAAAAAA
+            mesh.tex_coords[mesh.uv_indices[i][0]],
+            mesh.tex_coords[mesh.uv_indices[i][1]],
+            mesh.tex_coords[mesh.uv_indices[i][2]],
+            &texture
         );
     }
 
@@ -371,7 +386,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color)
     }
 }
 
-void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3 v2, uint32_t color)
+void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3 v2, vec2 uv0, vec2 uv1, vec2 uv2, const Texture *texture)
 {
     int min_x = fminf(s0.x, fminf(s1.x, s2.x));
     int max_x = fmaxf(s0.x, fmaxf(s1.x, s2.x));
@@ -393,17 +408,7 @@ void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3
     if (vec3_dot(normal, view_dir) <= 0)
         return;
 
-    // Compute lighting
-    vec3 lit_color = compute_lighting(&lighting_sys, &default_material, v0, normal);
-    
-    // Clamp to [0, 1]
-    lit_color.x = fminf(fmaxf(lit_color.x, 0.0f), 1.0f);
-    lit_color.y = fminf(fmaxf(lit_color.y, 0.0f), 1.0f);
-    lit_color.z = fminf(fmaxf(lit_color.z, 0.0f), 1.0f);
-    
-    uint8_t r = (uint8_t)(255 * lit_color.x);
-    uint8_t g = (uint8_t)(255 * lit_color.y);
-    uint8_t b = (uint8_t)(255 * lit_color.z);
+    // uint32_t final_color = color;
 
     // Rasterize triangle
     for (int y = min_y; y <= max_y; y++)
@@ -421,10 +426,14 @@ void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3
                 float alpha = w1 / area;
                 float beta = w2 / area;
                 float gamma = w0 / area;
-                float z = alpha * v0.z + beta * v1.z + gamma * v2.z;
+                float z = w0 * v0.z + w1 * v1.z + w2 * v2.z;
 
-                uint32_t final_color = (0xFF << 24) | (r << 16) | (g << 8) | b;
-                draw_pixel(x, y, z, final_color);
+                float u = w0 * uv0.x + w1 * uv1.x + w2 * uv2.x;
+                float v = w0 * uv0.y + w1 * uv1.y + w2 * uv2.y;
+
+                uint32_t tex_color = texture_sample(texture, u, v);
+
+                draw_pixel(x, y, z, tex_color);
             }
         }
     }

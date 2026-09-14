@@ -17,6 +17,10 @@ Forge3D/
 │   ├── projection.c/.h
 │   └── camera.c/.h
 ├── build/
+│   ├── forge3d
+│   ├── forge3d.exe
+├── models/
+├── textures/
 ```
 
 ## Requirements
@@ -37,11 +41,11 @@ Free models: [TurboSquid](https://www.turbosquid.com/), [Free3D](https://free3d.
 ### 2. Build
 
 ```bash
-gcc -o build\forge3d.exe src\main.c src\vector.c src\matrix.c src\projection.c src\camera.c src\mesh.c src\mesh_loader.c src\material.c src\lighting.c -lSDL3 -lm -I src
+gcc -o build\forge3d.exe src\main.c src\vector.c src\matrix.c src\projection.c src\camera.c src\mesh.c src\mesh_loader.c src\material.c src\lighting.c src\texture.c -lSDL3 -lSDL3_image -lm -I src
 ```
 or
 ```bash
-gcc -o build\forge3d src\main.c src\vector.c src\matrix.c src\projection.c src\camera.c src\mesh.c src\mesh_loader.c src\material.c src\lighting.c -lSDL3 -lm -I src
+gcc -o build\forge3d src\main.c src\vector.c src\matrix.c src\projection.c src\camera.c src\mesh.c src\mesh_loader.c src\material.c src\lighting.c src\texture.c -lSDL3 -lSDL3_image -lm -I src
 ```
 
 ### 3. Run
