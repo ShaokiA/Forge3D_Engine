@@ -6,6 +6,9 @@
 // Material structure - defines surface properties for lighting
 typedef struct {
     vec3 base_color;  // Base surface color (albedo)
+
+    float specular;   // Strength of specular reflection
+    float shininess;  // Sharpness of the highlight
 } Material;
 
 // Initialize material with default values

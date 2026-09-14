@@ -403,6 +403,15 @@ void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3
     vec3 edge2 = vec3_sub(v2, v0);
     vec3 normal = vec3_normalize(vec3_cross(edge1, edge2));
 
+    vec3 light_dir = vec3_normalize(
+        vec3_sub(lighting_sys.lights[0].position, v0)
+    );
+
+    float light_intensity = vec3_dot(normal, light_dir);
+
+    if (light_intensity < 0.0f)
+        light_intensity = 0.0f;
+
     // Backface culling
     vec3 view_dir = vec3_normalize(vec3_sub(camera_pos, v0));
     if (vec3_dot(normal, view_dir) <= 0)
@@ -433,7 +442,20 @@ void draw_triangle(vertex2d s0, vertex2d s1, vertex2d s2, vec3 v0, vec3 v1, vec3
 
                 uint32_t tex_color = texture_sample(texture, u, v);
 
-                draw_pixel(x, y, z, tex_color);
+                uint8_t r = (tex_color >> 16) & 0xFF;
+                uint8_t g = (tex_color >> 8) & 0xFF;
+                uint8_t b = tex_color & 0xFF;
+
+                r = (uint8_t)(r * light_intensity);
+                g = (uint8_t)(g * light_intensity);
+                b = (uint8_t)(b * light_intensity);
+
+                uint32_t lit_color = 0xFF000000 |
+                                     (r << 16) |
+                                     (g << 8) |
+                                     b;
+
+                draw_pixel(x, y, z, lit_color);
             }
         }
     }
